@@ -1,8 +1,30 @@
 # FPGA acceleration-triggered crash detector
 
-A Basys-3 / Artix-7 coursework prototype that reads an ADXL345 accelerometer over SPI and drives a SAFE / WARNING / CRASH state machine, OLED, seven-segment display and LED bar.
+A Basys-3 / Artix-7 coursework prototype with author-reported working accelerometer triggering, manual controls, OLED and LEDs. The original goal was to measure distance between objects and signal a potential collision. The distance sensor could not be made to work with the board, so the project continued with an accelerometer-only design. The published Verilog implements an ADXL345 SPI interface and a SAFE / WARNING / CRASH state machine with display and LED outputs.
 
 **Focus:** Verilog integration, stateful control, peripheral interfaces and simulation.
+
+## Project outcome
+
+The original distance-based collision-warning goal was not completed. Accelerometer thresholds respond to motion/acceleration; they do not measure object separation or establish that a collision is approaching. This repository contains the accelerometer-based implementation, not a working distance-sensing system.
+
+The following hardware results were reported by Alexander Gaspar Manuel from the original coursework build:
+
+| Feature | Original hardware result |
+|---|---|
+| LEDs | Worked |
+| OLED screen | Worked |
+| Switches and manual crash triggers | Worked |
+| Distance sensor | Did not work with the FPGA board; integration attempts were unsuccessful and work on that sensor stopped |
+| Accelerometer-triggered automatic warning/crash detection | Moving or shaking the accelerometer automatically changed the warning/crash state on the physical board |
+
+The distance-sensor model, specific troubleshooting steps and failure cause are not documented here. These reported hardware results refer to the original build, before the September 2026 source changes. The simulation results below are separate checks and do not establish end-to-end sensor operation.
+
+## My contribution
+
+I built the manual crash-detector controls and OLED display functionality with AI assistance, and personally connected the hardware to the FPGA board. I also attempted to integrate the distance sensor, but did not resolve the issue. This account describes my contribution; it does not claim that I independently authored every module in the repository.
+
+## Implemented architecture
 
 ```mermaid
 flowchart LR
@@ -13,7 +35,7 @@ flowchart LR
   D --> E[OLED / seven-segment / LEDs]
 ```
 
-## Behavior
+## Behavior implemented in the source
 
 - A scaled squared magnitude above 1,200 enters WARNING; above 1,800 enters CRASH.
 - WARNING persists for a configured hold interval after detection stops. CRASH latches until reset or manual override.
