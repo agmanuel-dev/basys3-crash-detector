@@ -12,6 +12,10 @@ Alexander built the manual crash-detector controls and OLED functionality using 
 
 ## Portfolio preparation
 
-In September 2026, Codex assisted with source review, packaging, documentation and the specific corrections/verification described in the README. The original local coursework files were preserved. New tests and reproducibility scripts were added during that preparation.
+In September 2026, Codex assisted with source review, packaging, documentation and the specific corrections/verification described in the README. The original local coursework files were preserved. The state-machine testbench and portable Vivado project script were added during that preparation.
 
 No blanket open-source license is applied. Existing third-party notices remain applicable. This repository documents the work and does not grant rights to third-party course material or datasets.
+
+## Documentation audit
+
+The September 2026 portfolio audit added a plain-language overview and file guide, checked claims against the published source/results, and corrected stale source comments where present. These documentation changes do not represent new physical hardware testing.

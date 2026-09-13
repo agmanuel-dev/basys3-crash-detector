@@ -23,8 +23,8 @@
 module display_ctrl(
     input clk,
     input rst,
-    input [1:0] car_state,    // MODIFIED: 2'b00=SAFE, 2'b10=WARNING, 2'b01=CRASH
-    input [15:0] x_axis,      // Distance data (unused in new design)
+    input [1:0] car_state,    // 2'b00=SAFE, 2'b10=WARNING, 2'b01=CRASH
+    input [15:0] x_axis,      // Legacy axis input, unused; no distance measurement is displayed
     input [9:0] y_axis,       // Unused
     input [9:0] z_axis,       // Unused
     output reg [6:0] seg,

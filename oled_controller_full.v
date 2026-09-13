@@ -14,10 +14,10 @@ module oled_controller_full(
     output reg  pmoden
 );
 
-    // FIXED COLOR MAPPING - swapped to match your actual hardware
-    localparam [15:0] COLOR_GREEN = 16'h07E0;   // Now correctly green
-    localparam [15:0] COLOR_RED   = 16'h000F;   // Now correctly red  
-    localparam [15:0] COLOR_YELLOW = 16'h0EFF;  // Yellow stays same
+    // Coursework color constants; display-dependent appearance needs board verification.
+    localparam [15:0] COLOR_GREEN = 16'h07E0;   // Intended SAFE background
+    localparam [15:0] COLOR_RED   = 16'h000F;   // Intended CRASH background  
+    localparam [15:0] COLOR_YELLOW = 16'h0EFF;  // Intended WARNING background
 
     localparam [4:0]
         S_IDLE          = 5'd0,
@@ -203,11 +203,11 @@ module oled_controller_full(
         case (car_state[1:0])
             2'b00: begin
                 background_color = COLOR_GREEN;
-                face_type = 2'b01;  // SMILE for safe (was backwards!)
+                face_type = 2'b01;  // Coursework SAFE face selection
             end
             2'b01: begin
                 background_color = COLOR_RED;
-                face_type = 2'b00;  // FROWN for crash (was backwards!)
+                face_type = 2'b00;  // Coursework CRASH face selection
             end
             default: begin
                 background_color = COLOR_YELLOW;

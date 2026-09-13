@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// ADXL345 Interface with OLED Display - Complete System
+// ADXL345 interface with OLED display - coursework prototype
 // Automatic crash detection based on accelerometer thresholds
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -34,7 +34,7 @@ module top #(
     wire [9:0] y_axis_raw;
     wire [9:0] z_axis_raw;
 
-    // 5Hz sample tick
+    // Approximately 5 Hz start/enable waveform; controller may reread while high
     wire clk_5hz;
 
     // Car state: 2'b00 = SAFE (green smile), 2'b01 = CRASH (red frown), 2'b10 = WARNING (yellow neutral)
@@ -52,7 +52,7 @@ module top #(
 
     //////////////////////////////////////////////////////////////////////////
     // Crash Detection Logic - MAGNITUDE BASED
-    // Works in any orientation by calculating total acceleration
+    // Uses squared axis magnitude; this alone does not establish calibrated impact detection.
     //////////////////////////////////////////////////////////////////////////
 
     // Convert 10-bit 2's complement to signed
@@ -71,10 +71,7 @@ module top #(
     // Scale down to reasonable range for comparison (divide by 256)
     wire [11:0] accel_mag_scaled = accel_mag_sq[19:8];
 
-    // Based on your measurements:
-    // At rest: ~1000
-    // Moderate shake: ~2000
-    // Hard shake: ~3000+
+    // Coursework thresholds in scaled raw counts; calibration records are not supplied.
     parameter [11:0] CRASH_MAG  = 12'd1800;   // Hard shake/impact
     parameter [11:0] WARNING_MAG = 12'd1200;  // Moderate shake
 
@@ -108,7 +105,7 @@ module top #(
     wire crash_confirmed = (crash_debounce >= 4'd5);     // ~5 clocks in a row
     wire warning_confirmed = (warning_debounce >= 4'd5); // ~5 clocks in a row
 
-    // State machine with hysteresis to prevent flickering
+    // State machine with warning hold time (not amplitude hysteresis)
     // State machine with crash latch - once crash detected, stays in crash state
     reg crash_latched;
     reg [31:0] state_counter;
@@ -163,7 +160,7 @@ module top #(
     end
 
     //////////////////////////////////////////////////////////////////////////
-    // 5Hz Clock Divider for Accelerometer Sampling
+    // Approximately 5 Hz start/enable divider for the sensor controller
     //////////////////////////////////////////////////////////////////////////
     ClkDiv_5Hz sample_clk(
         .CLK(clk),
@@ -188,15 +185,15 @@ module top #(
     );
 
     //////////////////////////////////////////////////////////////////////////
-    // 7-Segment Display - Shows acceleration magnitude for debugging
+    // Seven-segment display - state messages
     //////////////////////////////////////////////////////////////////////////
-    // Show the scaled magnitude value (same scale as thresholds)
+    // Retained legacy input; display_ctrl ignores axis values and displays car_state.
     wire [15:0] display_value = {4'b0, accel_mag_scaled};
 
     display_ctrl disp (
         .clk(clk),
         .rst(rst),
-        .car_state(car_state),      // MODIFIED: Pass the full car state
+        .car_state(car_state),      // Select the displayed state message
         .x_axis(display_value),     // No longer used
         .y_axis(y_axis_raw),        // No longer used
         .z_axis(z_axis_raw),        // No longer used
@@ -227,7 +224,7 @@ module top #(
     //////////////////////////////////////////////////////////////////////////
     // LEDs progressively turn on as acceleration increases
     // LED 0-14: Progressive fill based on proximity to crash threshold
-    // LED 15 ON + Blinking: CRASH state (latched)
+    // All 16 LEDs blink together for a latched automatic crash.
 
     // Blink clock divider - creates ~2Hz blink rate for crash state
     reg [25:0] blink_counter;
@@ -253,8 +250,8 @@ module top #(
 
     // Calculate how many LEDs should be on based on acceleration magnitude
     // Map accel_mag_scaled (0-4095) to LED count (0-15)
-    // Safe range: 0-1200 (WARNING_MAG) -> 0-7 LEDs
-    // Warning range: 1200-1800 (CRASH_MAG) -> 8-14 LEDs  
+    // Below 1200: floor(magnitude/128), giving 0-9 LEDs.
+    // From 1200 to 1799: 8-14 LEDs (a small discontinuity at 1200).  
     // Crash: 1800+ -> 15 LEDs + blink
 
     wire [4:0] led_count;  // 0 to 15
@@ -262,7 +259,7 @@ module top #(
     // Scale the magnitude to LED count
     // Use WARNING_MAG as starting point, CRASH_MAG as endpoint
     assign led_count = (accel_mag_scaled < WARNING_MAG) ? 
-                       // Below warning: scale 0 to 7 LEDs
+                       // Below warning: divide by 128; up to nine LEDs
                        (accel_mag_scaled[11:7]) :  // Divide by 128, gives 0-9 range for 0-1200
                        (accel_mag_scaled < CRASH_MAG) ?
                        // Warning to crash: scale 8 to 14 LEDs

@@ -98,7 +98,7 @@ module SPImaster(
     parameter [15:0] BW_RATE = 16'h2C0A;        // 100Hz
     parameter [15:0] DATA_FORMAT = 16'h3100;    // ±2g
 
-    // Read registers (single byte, increment)
+    // Separate single-byte register reads; addresses advance in the controller
     parameter [15:0] xAxis0 = 16'hB200;
     parameter [15:0] xAxis1 = 16'hB300;
     parameter [15:0] yAxis0 = 16'hB400;
@@ -358,7 +358,7 @@ module SPIinterface(
     output sclk
     );
 
-    parameter [7:0] CLKDIVIDER = 8'hFF;  // ~98kHz SCLK
+    parameter [7:0] CLKDIVIDER = 8'hFF;  // Steady SCLK approximately 195 kHz: 100 MHz / (2 * 256)
 
     parameter [1:0]
         TX_IDLE = 2'd0,
